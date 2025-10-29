@@ -31,15 +31,13 @@ This app allows users to **create, update, delete, and view tasks** in real-time
 
 ## 📂 Project Structure
 
-TODO_APP_FASTAPI/
-│
-├── main.py # FastAPI backend
-├── index.html # Frontend UI
-├── requirements.txt # Python dependencies (optional)
-└── README.md # Documentation
+TODO_APP_FASTAPI/<br>
+│<br>
+├── main.py          # FastAPI backend<br>
+├── index.html       # Frontend UI<br>
+├── requirements.txt # Python dependencies (optional)<br>
+└── README.md        # Documentation<br>
 
-yaml
-Copy code
 
 ---
 
@@ -51,43 +49,45 @@ Follow these steps to get the app running on your local machine:
 ```bash
 git clone https://github.com/yourusername/TODO_APP_FASTAPI.git
 cd TODO_APP_FASTAPI
-2. 🐍 Create and activate a virtual environment
-bash
-Copy code
+```
+
+### 2. 🐍 Create and activate a virtual environment
+```bash
 python -m venv venv
 source venv/bin/activate        # macOS/Linux
 venv\Scripts\activate           # Windows
-3. 📦 Install dependencies
-Create a requirements.txt (optional) with:
+```
 
-css
-Copy code
+### 3. 📦 Install dependencies
+Create a requirements.txt (optional) with:
+```css
 fastapi[all]
 psycopg2
+```
 Then install them:
 
-bash
-Copy code
+```bash
 pip install -r requirements.txt
-4. 🗄️ Setup PostgreSQL Database
+```
+
+### 4. 🗄️ Setup PostgreSQL Database
 Open your PostgreSQL client (psql or pgAdmin), then:
 
 Create a new database:
-sql
-Copy code
+```sql
 CREATE DATABASE postgres;
+```
 Create the test table:
-sql
-Copy code
+```sql
 CREATE TABLE test (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     status VARCHAR(50) DEFAULT 'pending'
 );
+```
 Update your database credentials in main.py if necessary:
-python
-Copy code
+```python
 conn = psycopg2.connect(
     host='127.0.0.1',
     database='postgres',
@@ -95,39 +95,45 @@ conn = psycopg2.connect(
     password='password',  # change this if needed
     cursor_factory=RealDictCursor
 )
-5. ▶️ Run the backend server
-bash
-Copy code
+```
+
+### 5. ▶️ Run the backend server
+```bash
 uvicorn main:app --reload
+```
 By default, it runs at:
 
-cpp
-Copy code
+```cpp
 http://127.0.0.1:8000
+```
 To open FastAPI’s interactive docs:
 
-arduino
-Copy code
+```arduino
 http://127.0.0.1:8000/docs
-6. 💻 Run the frontend
+```
+
+### 6. 💻 Run the frontend
 Simply open the index.html file in your browser
 OR serve it locally:
 
-bash
-Copy code
+```bash
 python -m http.server 5500
+```
 Then visit:
 
-arduino
-Copy code
+```arduino
 http://127.0.0.1:5500/index.html
+```
+
 Make sure your FastAPI CORS settings allow the frontend:
 
-python
-Copy code
+```python
 allow_origins=["*"]  # or ["http://127.0.0.1:5500"]
+```
+
 🧠 How It Works
 The frontend (index.html) interacts with the backend using the Fetch API.
+
 
 The backend (FastAPI) exposes RESTful CRUD endpoints:
 
@@ -143,19 +149,20 @@ All data is stored in PostgreSQL.
 
 FastAPI automatically provides an interactive Swagger UI for testing.
 
-🧩 Example API Usage
+
+🧩 Example API Usage <br><br>
 ➕ Create a Task
-bash
-Copy code
+```bash
 POST /create/
 {
   "title": "Write documentation",
   "description": "Write README for FastAPI Todo App",
   "status": "pending"
 }
+```
+
 🔄 Update a Task
-bash
-Copy code
+```bash
 PUT /update/
 {
   "id": 1,
@@ -163,17 +170,21 @@ PUT /update/
   "description": "Improve README and code comments",
   "status": "complete"
 }
+```
+
 ❌ Delete a Task
-bash
-Copy code
+```bash
 DELETE /delete/
 {
   "id": 1
 }
+```
+
 📋 Get All Tasks
-bash
-Copy code
+```bash
 GET /tasks/
+```
+
 🧰 Troubleshooting
 ⚠️ Database connection error
 Ensure PostgreSQL is running and credentials in main.py are correct.
@@ -184,9 +195,10 @@ Update allow_origins in the FastAPI CORS middleware to match your frontend URL.
 ⚠️ Port conflict
 Run FastAPI on another port:
 
-bash
-Copy code
+```bash
 uvicorn main:app --reload --port 8080
+```
+
 🧑‍💻 Author
 Aryan Chauhan
 
