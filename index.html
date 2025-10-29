@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FastAPI Task Manager</title>
+<style>
+    :root {
+        --bg: #f7f8fa;
+        --card: #fff;
+        --primary: #0078ff;
+        --secondary: #4b5563;
+        --success: #10b981;
+        --danger: #ef4444;
+        --radius: 10px;
+        --shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    body {
+        margin: 0;
+        font-family: "Inter", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--secondary);
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 800px;
+    }
+
+    h1 {
+        text-align: center;
+        color: var(--primary);
+    }
+
+    .task-form {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .task-form input, .task-form textarea, .task-form select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .task-form button {
+        background: var(--primary);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .task-form button:hover {
+        background: #005bcc;
+    }
+
+    .task-list {
+        display: grid;
+        gap: 15px;
+    }
+
+    .task-card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .task-details {
+        flex: 1;
+    }
+
+    .task-details h3 {
+        margin: 0;
+        color: var(--primary);
+    }
+
+    .task-details p {
+        margin: 5px 0;
+    }
+
+    .status {
+        font-weight: bold;
+        text-transform: capitalize;
+    }
+
+    .status.pending {
+        color: var(--danger);
+    }
+
+    .status.complete {
+        color: var(--success);
+    }
+
+    .task-actions button {
+        border: none;
+        cursor: pointer;
+        border-radius: var(--radius);
+        padding: 8px 12px;
+        margin-left: 5px;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+
+    .btn-update {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--danger);
+        color: white;
+    }
+
+    .btn-update:hover {
+        opacity: 0.9;
+    }
+
+    .btn-delete:hover {
+        opacity: 0.9;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>📝 FastAPI Task Manager</h1>
+
+    <div class="task-form">
+        <h2>Create / Update Task</h2>
+        <input type="number" id="task-id" placeholder="Task ID (for update/delete)" />
+        <input type="text" id="task-title" placeholder="Title" required />
+        <textarea id="task-desc" placeholder="Description"></textarea>
+        <select id="task-status">
+            <option value="pending">Pending</option>
+            <option value="complete">Complete</option>
+        </select>
+        <div style="display:flex; gap:10px; flex-wrap: wrap;">
+            <button onclick="createTask()">Add Task</button>
+            <button onclick="updateTask()">Update Task</button>
+            <button style="background: var(--danger)" onclick="deleteTask()">Delete Task</button>
+        </div>
+    </div>
+
+    <div class="task-list" id="task-list"></div>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000";
+
+async function fetchTasks() {
+    const res = await fetch(`${API_BASE}/tasks/`);
+    const data = await res.json();
+    displayTasks(data.tasks);
+}
+
+function displayTasks(tasks) {
+    const list = document.getElementById("task-list");
+    list.innerHTML = "";
+
+    tasks.forEach(task => {
+        const card = document.createElement("div");
+        card.className = "task-card";
+        card.innerHTML = `
+            <div class="task-details">
+                <h3>${task.title}</h3>
+                <p>${task.description || "No description"}</p>
+                <p class="status ${task.status}">${task.status}</p>
+            </div>
+            <div class="task-actions">
+                <button class="btn-update" onclick="fillForm(${task.id}, '${task.title}', '${task.description || ""}', '${task.status}')">✏️ Edit</button>
+                <button class="btn-delete" onclick="deleteTask(${task.id})">🗑️ Delete</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+function fillForm(id, title, desc, status) {
+    document.getElementById("task-id").value = id;
+    document.getElementById("task-title").value = title;
+    document.getElementById("task-desc").value = desc;
+    document.getElementById("task-status").value = status;
+}
+
+async function createTask() {
+    const title = document.getElementById("task-title").value.trim();
+    const description = document.getElementById("task-desc").value.trim();
+    const status = document.getElementById("task-status").value;
+
+    if (!title) {
+        alert("Title is required!");
+        return;
+    }
+
+    const res = await fetch(`${API_BASE}/create/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({title, description, status})
+    });
+
+    if (res.ok) {
+        alert("Task created successfully!");
+        fetchTasks();
+        clearForm();
+    } else {
+        alert("Error creating task.");
+    }
+}
+
+async function updateTask() {
+    const id = document.getElementById("task-id").value;
+    const title = document.getElementById("task-title").value.trim();
+    const description = document.getElementById("task-desc").value.trim();
+    const status = document.getElementById("task-status").value;
+
+    if (!id) {
+        alert("Enter Task ID to update!");
+        return;
+    }
+
+    const res = await fetch(`${API_BASE}/update/`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id: parseInt(id), title, description, status})
+    });
+
+    if (res.ok) {
+        alert("Task updated successfully!");
+        fetchTasks();
+        clearForm();
+    } else {
+        alert("Error updating task.");
+    }
+}
+
+async function deleteTask(idParam) {
+    const id = idParam || document.getElementById("task-id").value;
+
+    if (!id) {
+        alert("Enter Task ID to delete!");
+        return;
+    }
+
+    const res = await fetch(`${API_BASE}/delete/`, {
+        method: "DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id: parseInt(id)})
+    });
+
+    if (res.status === 204) {
+        alert(`Task ID ${id} deleted successfully!`);
+        fetchTasks();
+        clearForm();
+    } else {
+        alert("Error deleting task. It may not exist.");
+    }
+}
+
+function clearForm() {
+    document.getElementById("task-id").value = "";
+    document.getElementById("task-title").value = "";
+    document.getElementById("task-desc").value = "";
+    document.getElementById("task-status").value = "pending";
+}
+
+fetchTasks();
+</script>
+</body>
+</html>
